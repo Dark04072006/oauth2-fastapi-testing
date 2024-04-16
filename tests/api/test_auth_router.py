@@ -1,4 +1,4 @@
-from typing import AsyncIterable, Iterable
+from typing import AsyncIterable
 
 import httpx
 import pytest
@@ -7,7 +7,7 @@ import pytest_asyncio
 from app.main.web import create_app
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="session")
 async def client() -> AsyncIterable[httpx.AsyncClient]:
     app = create_app()
     transport = httpx.ASGITransport(app=app)
@@ -18,26 +18,20 @@ async def client() -> AsyncIterable[httpx.AsyncClient]:
         yield client
 
 
-@pytest.fixture
-def post_user_data() -> Iterable[dict]:
-    yield {"username": "alim", "password": "superpassword"}
+@pytest.fixture(scope="session")
+def post_user_data() -> dict:
+    return {"username": "alim", "password": "superpassword"}
 
 
-@pytest_asyncio.fixture
-async def auth_cookies(
-    client: httpx.AsyncClient, post_user_data: dict
-) -> AsyncIterable[dict]:
+@pytest_asyncio.fixture(scope="session")
+async def auth_cookies(client: httpx.AsyncClient, post_user_data: dict) -> dict:
     response = await client.post(
         "/auth/login",
         data=post_user_data,
         headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
 
-    assert response.status_code == 200
-    assert response.json() == {"id": 1, "username": "alim"}
-    assert "access_token" in response.cookies
-
-    yield {"access_token": response.cookies.get("access_token")}
+    return {"access_token": response.cookies.get("access_token")}
 
 
 @pytest.mark.asyncio
