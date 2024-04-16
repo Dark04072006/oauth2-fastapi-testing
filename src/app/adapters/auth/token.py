@@ -57,8 +57,7 @@ class JwtTokenProcessor:
 
             return int(payload["sub"])
 
-        except (JWTError, ValueError, KeyError) as e:
-            print(e)
+        except (JWTError, ValueError, KeyError):
             raise UserIsNotAuthenticated("Invalid credentials")
 
 
