@@ -1,6 +1,6 @@
 from app.adapters.auth.token import TokenIdProvider
 from app.adapters.data.repository import UserRepository
-from app.domain.exceptions import UserIsNotAuthenticated
+from app.domain.exceptions import UserAlreadyExists, UserIsNotAuthenticated
 from app.domain.user import User
 
 
@@ -9,6 +9,11 @@ class RegisterUser:
         self.repository = repository
 
     def execute(self, username: str, password: str) -> User:
+        exists = self.repository.get_user_by_username(username)
+
+        if exists:
+            raise UserAlreadyExists("User already exists")
+
         user = User(
             id=self.repository.get_last_inserted_id(),
             username=username,

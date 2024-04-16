@@ -31,6 +31,14 @@ async def test_register_user(client: httpx.AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
+async def test_register_user_already_exists(client: httpx.AsyncClient) -> None:
+    response = await client.post("/auth/register", json=POST_USER_DATA)
+
+    assert response.status_code == 409
+    assert response.json() == {"detail": "User already exists"}
+
+
+@pytest.mark.asyncio
 async def test_login_user(client: httpx.AsyncClient) -> None:
     response = await client.post(
         "/auth/login",
